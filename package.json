@@ -5,9 +5,9 @@
   "author": "meir <meirankri@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register index.ts",
-    "build": "tsc",
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register index.ts"
+    "start": "ts-node -r tsconfig-paths/register src/server.ts",
+    "build": "tsc --project tsconfig.json",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.679.0",

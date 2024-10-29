@@ -1,6 +1,6 @@
-import { SESClient, SendRawEmailCommand,  } from "@aws-sdk/client-ses";
-import { MedicalInfo, NotificationPort } from "../index";
-
+import { SESClient, SendRawEmailCommand } from "@aws-sdk/client-ses";
+import { MedicalInfo } from "../domain/models";
+import { NotificationPort } from "../domain/ports";
 export class AWSEmailNotificationService implements NotificationPort {
     private readonly sesClient: SESClient;
 
