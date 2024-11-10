@@ -1,6 +1,7 @@
 import { SESClient, SendRawEmailCommand } from "@aws-sdk/client-ses";
 import { MedicalInfo } from "../../domain/models";
 import { NotificationPort } from "../../domain/ports";
+import { logger } from "../../utils/logger";
 
 interface SESConfig {
     from: string;
@@ -42,7 +43,10 @@ export class SESNotificationAdapter implements NotificationPort {
             const response = await this.sesClient.send(command);
             return response;
         } catch (error) {
-            console.error('SES notification error:', error);
+            logger({
+                message: 'SES notification error',
+                context: error
+            }).error();
             throw new Error('Failed to send SES notification');
         }
     }

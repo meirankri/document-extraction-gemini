@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { Document, MedicalInfo } from '../../domain/models';
 import { DocumentExtractor, ExternalApiPort } from '../../domain/ports';
+import { logger } from '../../utils/logger';
 
 export class GeminiDocumentExtractor implements DocumentExtractor {
     private readonly genAI: GoogleGenerativeAI;
@@ -105,7 +106,10 @@ export class HttpExternalApi implements ExternalApiPort {
     
             return response.json();
         } catch (error) {
-            console.error("Error sending medical info:", error);
+            logger({
+                message: 'Error sending medical info',
+                context: error
+            }).error();
             throw error;
         }
     }

@@ -1,3 +1,10 @@
+import * as Sentry from '@sentry/node';
+
+// Initialisation de Sentry (à mettre au début du fichier)
+Sentry.init({
+  dsn: "https://8c9c24e8d70ccfbeb90e69e9f8033682@o4507430325649408.ingest.de.sentry.io/4507430332006480",
+  environment: process.env.NODE_ENV || 'development',
+});
 
 export const logger = ({
   message,
@@ -9,7 +16,17 @@ export const logger = ({
   return {
     info: () => console.info(message, context),
     error: () => {
-      console.error(message, context);
+      let contextStringified;
+      try {
+        contextStringified = context ? JSON.stringify(context) : null;
+      } catch (error) {
+        contextStringified = "Error stringifying context";
+      }
+      Sentry.setContext("error context", {
+        context: contextStringified,
+      });
+      Sentry.captureException(new Error(message));
+      process.env.NODE_ENV !== "production" && console.error(message, context);
     },
     warn: () => console.warn(message, context),
   };

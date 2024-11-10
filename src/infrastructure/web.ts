@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { Document } from '../domain/models';
 import { ProcessDocumentUseCase } from '../domain/ports';
+import { logger } from '../utils/logger';
 
 export class DocumentController {
     constructor(private readonly processDocumentUseCase: ProcessDocumentUseCase) {}
@@ -28,7 +29,10 @@ export class DocumentController {
             const result = await this.processDocumentUseCase.execute(document);
             res.json({ success: true, data: result });
         } catch (error) {
-            console.error('Error processing document:', error);
+            logger({
+                message: 'Error processing document',
+                context: error
+            }).error();
             res.status(500).json({
                 error: 'Internal server error',
                 message: error instanceof Error ? error.message : 'Unknown error'
