@@ -40,10 +40,10 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
             return {...medicalInfo, status: 2};
         }
 
-        await this.externalApi.sendMedicalInfo({
-            ...medicalInfo,
-            documentId: document.id
-        });
+        // await this.externalApi.sendMedicalInfo({
+        //     ...medicalInfo,
+        //     documentId: document.id
+        // });
 
         return {...medicalInfo, status: 1};
     }

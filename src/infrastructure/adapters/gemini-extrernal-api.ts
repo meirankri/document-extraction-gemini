@@ -45,7 +45,9 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
             - patientBirthdate
             - examinationDate
             - examinationType
-            pour l'examinationType, si c'est un examen de type "Résultats de biologie", retourne Analyses Sanguines
+            pour l'examinationType, si c'est un examen de type "Résultats de biologie", retourne Analyses Sanguines.
+            l'patientBirthdate et examinationDate doivent être au format DD/MM/YYYY.
+            le patientGender doit être M ou F.
             `;
 
         const result = await model.generateContent([

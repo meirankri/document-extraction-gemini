@@ -7,7 +7,10 @@
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc --project tsconfig.json",
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
+    "prod": "pm2 start ecosystem.config.js --env production",
+    "prod:stop": "pm2 stop ecosystem.config.js",
+    "prod:restart": "pm2 restart ecosystem.config.js"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.679.0",

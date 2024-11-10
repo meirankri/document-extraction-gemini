@@ -1,9 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { Database, loadConfig } from './infrastructure/config';
-import { GeminiDocumentExtractor } from './infrastructure/adapters/external';
+import { GeminiDocumentExtractor } from './infrastructure/adapters/gemini-extrernal-api';
 import { MySqlExaminationTypeRepository } from './infrastructure/adapters/database';
-import { HttpExternalApi } from './infrastructure/adapters/external';
+import { HttpExternalApi } from './infrastructure/adapters/gemini-extrernal-api';
 import { EmailNotificationService, NotificationServiceAdapter } from './infrastructure/adapters/notification';
 import { DocumentProcessingService } from './application/services';
 import { DocumentController } from './infrastructure/web';
