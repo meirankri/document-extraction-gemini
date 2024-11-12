@@ -12,7 +12,6 @@
     "prod:stop": "pm2 stop ecosystem.config.js",
     "prod:restart": "pm2 restart ecosystem.config.js"
   },
-
   "dependencies": {
     "@aws-sdk/client-ses": "^3.679.0",
     "@google/generative-ai": "^0.21.0",
