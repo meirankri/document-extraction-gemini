@@ -69,7 +69,7 @@ export class DocumentController {
       logger({
         message: "Error processing document",
         context: error,
-      }).error();
+      }).info();
       res.status(500).json({
         error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",

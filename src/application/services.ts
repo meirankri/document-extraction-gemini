@@ -48,7 +48,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
     //     documentId: document.id
     // });
 
-    return { ...medicalInfo, examinationType: examinationType.name, status: 1 };
+    return { ...medicalInfo, folderName: examinationType.name, status: 1 };
   }
 
   private validateInformation(info: Partial<MedicalInfo>): {

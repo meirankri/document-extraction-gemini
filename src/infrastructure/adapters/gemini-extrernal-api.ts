@@ -43,19 +43,34 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
       },
     });
 
-    const prompt = `Extrait ces informations et retourne sous format JSON:
-            - patientFirstName
-            - patientLastName
-            - patientGender
-            - patientBirthdate
-            - examinationDate
-            - examinationType
-            pour l'examinationType, si c'est un examen de type "Résultats de biologie", retourne Analyses Sanguines,
-            sinon retourne l'examinationType tel quel.
-            l'patientBirthdate et examinationDate doivent être au format DD/MM/YYYY.
-            
-            le patientGender doit être M ou F.
-            `;
+    const prompt = `Extrait les informations suivantes d'un document médical scanné et retourne-les sous format JSON :
+                patientFirstName : Le prénom du patient.
+                patientLastName : Le nom de famille du patient.
+                patientGender : Le sexe du patient (M ou F uniquement).
+                patientBirthdate : La date de naissance du patient au format DD/MM/YYYY.
+                examinationDate : La date de l'examen médical au format DD/MM/YYYY.
+                examinationType : Le type d'examen.
+                Si le type d'examen est lié à des "Résultats de biologie", retourne "Analyses Sanguines".
+                Sinon, retourne le type d'examen tel quel.
+                Conventions et indices pour extraire les données :
+
+                Le examinationType est généralement centré et situé en haut du document, sans titre explicite le précédant. Il correspond au titre que donnerait un médecin à ce document.
+                Les dates, lorsqu'elles sont présentes, sont souvent associées à des termes comme "Date de naissance", "Date d'examen" ou "Né(e) le".
+                Le sexe peut être identifié par des mentions comme "Homme", "Femme", ou des abréviations équivalentes (H/F).
+                Privilégier les informations formatées en texte brut ou clairement identifiables.
+                Exemple de sortie au format JSON :
+
+                json
+                {
+                    "patientFirstName": "Jean",
+                    "patientLastName": "Dupont",
+                    "patientGender": "M",
+                    "patientBirthdate": "15/03/1985",
+                    "examinationDate": "20/12/2024",
+                    "examinationType": "Analyses Sanguines"
+                }
+                Si certaines informations sont absentes ou non détectables, les valeurs retournées doivent être nulles ou une chaîne vide ("").
+                            `;
 
     const result = await model.generateContent([
       prompt,
