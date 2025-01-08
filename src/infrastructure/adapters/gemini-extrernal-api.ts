@@ -14,7 +14,9 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
-  async extract(document: Document): Promise<MedicalInfo> {
+  async extract(
+    document: Document
+  ): Promise<Omit<MedicalInfo, "status" | "folderName">> {
     const model = this.genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       safetySettings: [
@@ -43,34 +45,66 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
       },
     });
 
-    const prompt = `Extrait les informations suivantes d'un document médical scanné et retourne-les sous format JSON :
-                patientFirstName : Le prénom du patient.
-                patientLastName : Le nom de famille du patient.
-                patientGender : Le sexe du patient (M ou F uniquement).
-                patientBirthdate : La date de naissance du patient au format DD/MM/YYYY.
-                examinationDate : La date de l'examen médical au format DD/MM/YYYY.
-                examinationType : Le type d'examen.
-                Si le type d'examen est lié à des "Résultats de biologie", retourne "Analyses Sanguines".
-                Sinon, retourne le type d'examen tel quel.
-                Conventions et indices pour extraire les données :
+    const prompt = `# Prompt d'extraction de documents médicaux
 
-                Le examinationType est généralement centré et situé en haut du document, sans titre explicite le précédant. Il correspond au titre que donnerait un médecin à ce document.
-                Les dates, lorsqu'elles sont présentes, sont souvent associées à des termes comme "Date de naissance", "Date d'examen" ou "Né(e) le".
-                Le sexe peut être identifié par des mentions comme "Homme", "Femme", ou des abréviations équivalentes (H/F).
-                Privilégier les informations formatées en texte brut ou clairement identifiables.
-                Exemple de sortie au format JSON :
+        ## Objectif
+        Extraire les informations structurées d'un document médical scanné et les retourner au format JSON standardisé.
 
-                json
-                {
-                    "patientFirstName": "Jean",
-                    "patientLastName": "Dupont",
-                    "patientGender": "M",
-                    "patientBirthdate": "15/03/1985",
-                    "examinationDate": "20/12/2024",
-                    "examinationType": "Analyses Sanguines"
-                }
-                Si certaines informations sont absentes ou non détectables, les valeurs retournées doivent être nulles ou une chaîne vide ("").
-                            `;
+        ## Informations à extraire
+        1. Informations patient :
+            - patientFirstName : Prénom du patient
+            - patientLastName : Nom de famille du patient
+            - patientGender : Sexe du patient (M ou F uniquement)
+            - patientBirthdate : Date de naissance (format DD/MM/YYYY)
+            - examinationDate : Date de l'examen (format DD/MM/YYYY)
+            - examinationType : Type d'examen
+
+        ## Règles de reconnaissance et extraction
+
+        ### Types de documents et spécialités
+        Identifier la catégorie principale du document parmi :
+        - ORDONNANCES
+        - CHIRURGIE
+        - CONSULTATION
+        - HOSPITALISATION
+        - ORDONNANCE - BILAN
+
+        ### Règles spécifiques pour examinationType
+        1. Si "Résultats de biologie" → "Analyses Sanguines"
+        2. Pour les autres cas → Conserver l'intitulé original
+
+        ### Indices de localisation
+        - examinationType : Généralement centré en haut du document
+        - Dates : Chercher les mentions "Date de naissance", "Date d'examen", "Né(e) le"
+        - Genre : Identifier "Homme"/"Femme" ou H/F
+        - Spécialité : Analyser l'en-tête et le contenu pour identifier le service médical
+
+        ## Format de sortie JSON
+        {
+            "patientFirstName": "Jean",
+            "patientLastName": "Dupont",
+            "patientGender": "M",
+            "patientBirthdate": "15/03/1985",
+            "examinationDate": "20/12/2024",
+            "examinationType": "Analyses Sanguines",
+        }
+
+        ## Règles de gestion des valeurs manquantes
+        - Informations non trouvées → ""
+        - Dates non trouvées → null
+        - Genre non identifié → ""
+
+        ## Priorités de reconnaissance
+        1. Privilégier le texte formaté et clairement identifiable
+        2. Rechercher les informations dans l'en-tête du document
+        3. Analyser le corps du document pour les informations manquantes
+        4. Vérifier la cohérence entre le type de document et la spécialité médicale
+
+        ## Validation des données
+        1. Vérifier la cohérence des dates (format et validité)
+        2. Contrôler que le genre est bien M ou F
+        3. S'assurer que la spécialité correspond aux catégories définies
+                                    `;
 
     const result = await model.generateContent([
       prompt,
@@ -92,7 +126,18 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
       throw new Error("Aucun JSON valide trouvé dans la réponse");
     }
 
-    return JSON.parse(jsonMatch[0]);
+    const json = JSON.parse(jsonMatch[0]);
+
+    const medicalInfo = {
+      patientFirstName: json.patientFirstName,
+      patientLastName: json.patientLastName,
+      patientGender: json.patientGender,
+      patientBirthdate: json.patientBirthdate,
+      examinationDate: json.examinationDate,
+      examinationType: json.examinationType.trim().replace(/\n/g, " "), // remplace tous les sauts de ligne
+    };
+
+    return medicalInfo;
   }
 }
 

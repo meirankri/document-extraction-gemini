@@ -40,7 +40,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
         ["Invalid examination type"],
         medicalInfo
       );
-      return { ...medicalInfo, status: 2 };
+      return { ...medicalInfo, status: 2, folderName: "" };
     }
 
     // await this.externalApi.sendMedicalInfo({

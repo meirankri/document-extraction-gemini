@@ -1,25 +1,27 @@
-import { Document, MedicalInfo, ExaminationType } from './models';
+import { Document, MedicalInfo, ExaminationType } from "./models";
 
 export interface ProcessDocumentUseCase {
-    execute(document: Document): Promise<MedicalInfo>;
+  execute(document: Document): Promise<MedicalInfo>;
 }
 
 export interface DocumentExtractor {
-    extract(document: Document): Promise<MedicalInfo>;
+  extract(
+    document: Document
+  ): Promise<Omit<MedicalInfo, "status" | "folderName">>;
 }
 
 export interface ExaminationTypeRepository {
-    findByName(name: string): Promise<ExaminationType | null>;
+  findByName(name: string): Promise<ExaminationType | null>;
 }
 
 export interface ExternalApiPort {
-    sendMedicalInfo(info: MedicalInfo & { documentId: string }): Promise<any>;
+  sendMedicalInfo(info: MedicalInfo & { documentId: string }): Promise<any>;
 }
 
 export interface NotificationPort {
-    notifyMissingInformation(
-        documentId: string,
-        missingFields: string[],
-        partialInfo: Partial<MedicalInfo>
-    ): Promise<any>;
+  notifyMissingInformation(
+    documentId: string,
+    missingFields: string[],
+    partialInfo: Partial<MedicalInfo>
+  ): Promise<any>;
 }
