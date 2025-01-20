@@ -11,7 +11,7 @@ import multer from "multer";
 import path from "path";
 import { DocumentConverter } from "./infrastructure/services/documentConverter";
 import fs from "fs/promises";
-import { SMTPNotificationAdapter } from "@infrastructure/adapters/SMTPNotificationAdapter";
+import { SMTPNotificationAdapter } from "./infrastructure/adapters/SMTPNotificationAdapter";
 
 dotenv.config();
 const config = loadConfig();
