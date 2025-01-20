@@ -3,19 +3,15 @@ import dotenv from "dotenv";
 import { Database, loadConfig } from "./infrastructure/config";
 import { GeminiDocumentExtractor } from "./infrastructure/adapters/gemini-extrernal-api";
 import { MySqlExaminationTypeRepository } from "./infrastructure/adapters/database";
-import { HttpExternalApi } from "./infrastructure/adapters/gemini-extrernal-api";
-import {
-  EmailNotificationService,
-  NotificationServiceAdapter,
-} from "./infrastructure/adapters/notification";
+import { NotificationServiceAdapter } from "./infrastructure/adapters/notification";
 import { DocumentProcessingService } from "./application/services";
 import { DocumentController } from "./infrastructure/web";
 import { createDocumentRouter } from "./infrastructure/web";
-import { SESNotificationAdapter } from "./infrastructure/adapters/SESNotificationAdapter";
 import multer from "multer";
 import path from "path";
 import { DocumentConverter } from "./infrastructure/services/documentConverter";
 import fs from "fs/promises";
+import { SMTPNotificationAdapter } from "@infrastructure/adapters/SMTPNotificationAdapter";
 
 dotenv.config();
 const config = loadConfig();
@@ -34,43 +30,27 @@ const documentExtractor = new GeminiDocumentExtractor(
 const examinationTypeRepository = new MySqlExaminationTypeRepository(
   Database.getPool()
 );
-const externalApi = new HttpExternalApi(process.env.EXTERNAL_API_URL!);
 
-const emailService = new EmailNotificationService(
-  {
-    host: process.env.SMTP_HOST!,
-    port: parseInt(process.env.SMTP_PORT!),
-    secure: true,
-    auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASSWORD!,
-    },
-  },
-  {
-    from: process.env.EMAIL_FROM!,
-    to: process.env.EMAIL_TO!,
-  }
-);
-
-const sesNotificationService = new SESNotificationAdapter({
+const notificationAdapter = new SMTPNotificationAdapter({
   from: config.email.config.from,
   to: config.email.config.to,
-  region: config.aws.region,
-  credentials: {
-    accessKeyId: config.aws.accessKeyId,
-    secretAccessKey: config.aws.secretAccessKey,
+  host: config.email.smtp.host,
+  port: config.email.smtp.port,
+  secure: config.email.smtp.secure,
+  auth: {
+    user: config.email.smtp.auth.user,
+    pass: config.email.smtp.auth.pass,
   },
 });
 
 const notificationService = new NotificationServiceAdapter(
-  sesNotificationService,
+  notificationAdapter,
   process.env.NODE_ENV !== "production"
 );
 
 const documentProcessingService = new DocumentProcessingService(
   documentExtractor,
   examinationTypeRepository,
-  externalApi,
   notificationService
 );
 
@@ -127,11 +107,9 @@ app.post(
       return;
     } catch (error) {
       await cleanupFiles(filesToClean);
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
       return;
     }
   }

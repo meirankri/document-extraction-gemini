@@ -15,6 +15,7 @@ export interface MedicalInfo {
   examinationType: string;
   folderName: string;
   status: number;
+  missingInformation?: string[];
 }
 
 export interface ExaminationType extends RowDataPacket {

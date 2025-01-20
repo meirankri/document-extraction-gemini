@@ -1,3 +1,4 @@
+import { Attachment } from "nodemailer/lib/mailer";
 import { Document, MedicalInfo, ExaminationType } from "./models";
 
 export interface ProcessDocumentUseCase {
@@ -22,6 +23,7 @@ export interface NotificationPort {
   notifyMissingInformation(
     documentId: string,
     missingFields: string[],
-    partialInfo: Partial<MedicalInfo>
+    partialInfo: Partial<MedicalInfo>,
+    attachment?: Attachment
   ): Promise<any>;
 }
