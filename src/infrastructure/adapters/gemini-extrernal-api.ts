@@ -45,7 +45,8 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
       },
     });
 
-    const prompt = `# Prompt d'extraction de documents médicaux
+    const prompt = `
+        Reflechi avant de répondre.
 
         ## Objectif
         Extraire les informations structurées d'un document médical scanné et les retourner au format JSON standardisé.
@@ -72,6 +73,7 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
         ### Règles spécifiques pour examinationType
         1. Si "Résultats de biologie" → "Analyses Sanguines"
         2. Pour les autres cas → Conserver l'intitulé original
+        3. Pour les rapports d'examen -> "Rapport [nom de l'examen]"
 
         ### Indices de localisation
         - examinationType : Généralement centré en haut du document
@@ -91,7 +93,7 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
 
         ## Règles de gestion des valeurs manquantes
         - Informations non trouvées → ""
-        - Dates non trouvées → null
+        - Dates non trouvées → "
         - Genre non identifié → ""
 
         ## Priorités de reconnaissance
