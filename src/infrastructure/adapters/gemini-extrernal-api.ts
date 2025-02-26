@@ -73,7 +73,6 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
         ### Règles spécifiques pour examinationType
         1. Si "Résultats de biologie" → "Analyses Sanguines"
         2. Pour les autres cas → Conserver l'intitulé original
-        3. Pour les rapports d'examen -> "Rapport [nom de l'examen]"
 
         ### Indices de localisation
         - examinationType : Généralement centré en haut du document
