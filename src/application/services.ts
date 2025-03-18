@@ -5,17 +5,66 @@ import {
   DocumentExtractor,
   ExaminationTypeRepository,
   NotificationPort,
+  DocumentCategoryRepository,
+  CategoryDetector,
 } from "../domain/ports";
 
 export class DocumentProcessingService implements ProcessDocumentUseCase {
   constructor(
     private readonly documentExtractor: DocumentExtractor,
     private readonly examinationTypeRepository: ExaminationTypeRepository,
-    private readonly notificationService: NotificationPort
+    private readonly notificationService: NotificationPort,
+    private readonly categoryDetector?: CategoryDetector,
+    private readonly documentCategoryRepository?: DocumentCategoryRepository
   ) {}
 
   async execute(document: Document): Promise<MedicalInfo> {
-    const medicalInfo = await this.documentExtractor.extract(document);
+    // Si nous avons un détecteur de catégorie et un repo de catégories, on utilise le système de prompts personnalisés
+    let customPrompt: string | undefined;
+
+    if (this.categoryDetector && this.documentCategoryRepository) {
+      try {
+        // Récupération de toutes les catégories
+        const categories = await this.documentCategoryRepository.findAll();
+        const categoryNames = categories.map((cat) => cat.name);
+
+        // Détection de la catégorie du document
+        const detectionResult = await this.categoryDetector.detectCategory(
+          document,
+          categoryNames
+        );
+        logger({
+          message: "Catégorie détectée",
+          context: detectionResult,
+        }).info();
+
+        // Si une catégorie a été détectée, on récupère le prompt correspondant
+        if (!detectionResult.no_category && detectionResult.category) {
+          const category = await this.documentCategoryRepository.findByName(
+            detectionResult.category
+          );
+          if (category) {
+            customPrompt = category.prompt;
+            logger({
+              message: "Utilisation d'un prompt personnalisé pour la catégorie",
+              context: category.name,
+            }).info();
+          }
+        }
+      } catch (error) {
+        logger({
+          message: "Erreur lors de la détection de catégorie",
+          context: error,
+        }).error();
+        // On continue avec le prompt par défaut
+      }
+    }
+
+    // Extraction des informations avec le prompt personnalisé ou par défaut
+    const medicalInfo = await this.documentExtractor.extract(
+      document,
+      customPrompt
+    );
 
     const validation = this.validateInformation(medicalInfo);
     if (!validation.isValid) {

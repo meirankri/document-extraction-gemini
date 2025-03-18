@@ -1,6 +1,9 @@
 import { Pool } from "mysql2/promise";
-import { ExaminationType } from "../../domain/models";
-import { ExaminationTypeRepository } from "../../domain/ports";
+import { ExaminationType, DocumentCategory } from "../../domain/models";
+import {
+  ExaminationTypeRepository,
+  DocumentCategoryRepository,
+} from "../../domain/ports";
 import { slugify } from "../../utils/format";
 
 export class MySqlExaminationTypeRepository
@@ -17,6 +20,27 @@ export class MySqlExaminationTypeRepository
       [formattedSearchName]
     );
 
+    return rows[0] || null;
+  }
+}
+
+export class MySqlDocumentCategoryRepository
+  implements DocumentCategoryRepository
+{
+  constructor(private readonly pool: Pool) {}
+
+  async findAll(): Promise<DocumentCategory[]> {
+    const [rows] = await this.pool.execute<DocumentCategory[]>(
+      `SELECT * FROM documentCategory`
+    );
+    return rows;
+  }
+
+  async findByName(name: string): Promise<DocumentCategory | null> {
+    const [rows] = await this.pool.execute<DocumentCategory[]>(
+      `SELECT * FROM documentCategory WHERE name = ?`,
+      [name]
+    );
     return rows[0] || null;
   }
 }

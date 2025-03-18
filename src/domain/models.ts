@@ -24,3 +24,9 @@ export interface ExaminationType extends RowDataPacket {
   code: string;
   coordonance?: string;
 }
+
+export interface DocumentCategory extends RowDataPacket {
+  id: number;
+  name: string;
+  prompt: string;
+}

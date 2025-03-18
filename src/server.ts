@@ -1,8 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import { Database, loadConfig } from "./infrastructure/config";
-import { GeminiDocumentExtractor } from "./infrastructure/adapters/gemini-extrernal-api";
-import { MySqlExaminationTypeRepository } from "./infrastructure/adapters/database";
+import {
+  GeminiDocumentExtractor,
+  GeminiCategoryDetector,
+} from "./infrastructure/adapters/gemini-extrernal-api";
+import {
+  MySqlExaminationTypeRepository,
+  MySqlDocumentCategoryRepository,
+} from "./infrastructure/adapters/database";
 import { NotificationServiceAdapter } from "./infrastructure/adapters/notification";
 import { DocumentProcessingService } from "./application/services";
 import { DocumentController } from "./infrastructure/web";
@@ -30,6 +36,12 @@ const documentExtractor = new GeminiDocumentExtractor(
 const examinationTypeRepository = new MySqlExaminationTypeRepository(
   Database.getPool()
 );
+const documentCategoryRepository = new MySqlDocumentCategoryRepository(
+  Database.getPool()
+);
+const categoryDetector = new GeminiCategoryDetector(
+  process.env.GEMINI_API_KEY!
+);
 
 const notificationAdapter = new SMTPNotificationAdapter({
   from: config.email.config.from,
@@ -51,7 +63,9 @@ const notificationService = new NotificationServiceAdapter(
 const documentProcessingService = new DocumentProcessingService(
   documentExtractor,
   examinationTypeRepository,
-  notificationService
+  notificationService,
+  categoryDetector,
+  documentCategoryRepository
 );
 
 const documentController = new DocumentController(documentProcessingService);
