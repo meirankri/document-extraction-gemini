@@ -1,9 +1,13 @@
-import * as Sentry from '@sentry/node';
+import * as Sentry from "@sentry/node";
 
 // Initialisation de Sentry (à mettre au début du fichier)
 Sentry.init({
   dsn: "https://8c9c24e8d70ccfbeb90e69e9f8033682@o4507430325649408.ingest.de.sentry.io/4507430332006480",
-  environment: process.env.NODE_ENV || 'development',
+  environment: process.env.NODE_ENV || "development",
+  integrations: (integrations) => {
+    // Filtrer l'intégration HTTP qui cause le problème
+    return integrations.filter((integration) => integration.name !== "Http");
+  },
 });
 
 export const logger = ({
