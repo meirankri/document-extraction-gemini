@@ -21,6 +21,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
   async execute(document: Document): Promise<MedicalInfo> {
     // Si nous avons un détecteur de catégorie et un repo de catégories, on utilise le système de prompts personnalisés
     let customPrompt: string | undefined;
+    let usedCategory = "default"; // Valeur par défaut
 
     if (this.categoryDetector && this.documentCategoryRepository) {
       try {
@@ -45,6 +46,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
           );
           if (category) {
             customPrompt = category.prompt;
+            usedCategory = category.name; // On enregistre la catégorie utilisée
             logger({
               message: "Utilisation d'un prompt personnalisé pour la catégorie",
               context: category.name,
@@ -72,7 +74,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
         await this.notificationService.notifyMissingInformation(
           document.id,
           validation.missingFields,
-          medicalInfo,
+          { ...medicalInfo, usedCategory }, // Ajout de la catégorie dans la notification
           {
             filename: "document.pdf",
             content: document.content,
@@ -90,6 +92,7 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
         status: 2,
         folderName: "",
         missingInformation: validation.missingFields,
+        usedCategory, // Ajout de la catégorie dans l'objet de retour
       };
     }
 
@@ -101,16 +104,21 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
       await this.notificationService.notifyMissingInformation(
         document.id,
         ["Invalid examination type"],
-        medicalInfo,
+        { ...medicalInfo, usedCategory }, // Ajout de la catégorie dans la notification
         {
           filename: "document.pdf",
           content: document.content,
         }
       );
-      return { ...medicalInfo, status: 2, folderName: "" };
+      return { ...medicalInfo, status: 2, folderName: "", usedCategory };
     }
 
-    return { ...medicalInfo, folderName: examinationType.name, status: 1 };
+    return {
+      ...medicalInfo,
+      folderName: examinationType.name,
+      status: 1,
+      usedCategory, // Ajout de la catégorie dans l'objet de retour réussi
+    };
   }
 
   private validateInformation(info: Partial<MedicalInfo>): {

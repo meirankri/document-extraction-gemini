@@ -80,9 +80,15 @@ export class SMTPNotificationAdapter implements NotificationPort {
     missingFields: string[],
     partialInfo: Partial<MedicalInfo>
   ): string {
+    const usedCategory = partialInfo.usedCategory || "default";
+
     return `
             <h2>Document Information Incomplete</h2>
             <p>Document ID: ${documentId}</p>
+            
+            <h3>Catégorie utilisée: <span style="color: ${
+              usedCategory === "default" ? "#ff9900" : "#009900"
+            };">${usedCategory}</span></h3>
             
             <h3>Missing Fields:</h3>
             <ul>
