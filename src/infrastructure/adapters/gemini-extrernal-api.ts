@@ -44,9 +44,9 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
         },
       ],
       generationConfig: {
-        temperature: 1,
-        topP: 0.95,
-        topK: 64,
+        temperature: 0.0,
+        topP: 1.0,
+        topK: 1,
         maxOutputTokens: 8192,
       },
     });

@@ -20,7 +20,18 @@ export class MySqlExaminationTypeRepository
       [formattedSearchName]
     );
 
-    return rows[0] || null;
+    if (rows.length === 0) {
+      const [rows] = await this.pool.execute<ExaminationType[]>(
+        `SELECT mt.* FROM medicalType mt 
+              INNER JOIN coordonance c ON c.typeID = mt.id 
+              WHERE LOWER(c.name) = LOWER(?) limit 1`,
+        [name]
+      );
+
+      return rows[0] || null;
+    }
+
+    return rows[0];
   }
 }
 
