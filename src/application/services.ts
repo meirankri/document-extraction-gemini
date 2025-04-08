@@ -69,6 +69,17 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
     );
 
     const validation = this.validateInformation(medicalInfo);
+
+    // // Vérifier si le seul champ manquant est le genre
+    // const onlyGenderMissing =
+    //   validation.missingFields.length === 1 &&
+    //   !medicalInfo.patientGender &&
+    //   medicalInfo.patientFirstName &&
+    //   medicalInfo.patientLastName &&
+    //   medicalInfo.patientBirthdate &&
+    //   medicalInfo.examinationDate &&
+    //   medicalInfo.examinationType;
+
     if (!validation.isValid) {
       try {
         await this.notificationService.notifyMissingInformation(
@@ -128,7 +139,6 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
     const requiredFields: (keyof MedicalInfo)[] = [
       "patientFirstName",
       "patientLastName",
-      "patientGender",
       "patientBirthdate",
       "examinationDate",
       "examinationType",
