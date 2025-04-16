@@ -27,4 +27,5 @@ jobs:
         run: |
           gcloud compute ssh instance-20240611-180413 \
             --zone=us-central1-c \
+            --ssh-flag="-l developermiketz" \
             --command="cd document-extraction-gemini && sudo sh deploy.sh"
