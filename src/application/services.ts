@@ -19,8 +19,8 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
   ) {}
 
   async execute(document: Document): Promise<MedicalInfo> {
-    // Si nous avons un détecteur de catégorie et un repo de catégories, on utilise le système de prompts personnalisés
     let customPrompt: string | undefined;
+    let systemPrompt: string | undefined;
     let usedCategory = "default"; // Valeur par défaut
 
     if (this.categoryDetector && this.documentCategoryRepository) {
@@ -28,6 +28,20 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
         // Récupération de toutes les catégories
         const categories = await this.documentCategoryRepository.findAll();
         const categoryNames = categories.map((cat) => cat.name);
+
+        // Récupération du prompt système global
+        try {
+          const systemCategory =
+            await this.documentCategoryRepository.findByName("system_prompt");
+          if (systemCategory) {
+            systemPrompt = systemCategory.prompt;
+          }
+        } catch (error) {
+          logger({
+            message: "Error while getting system prompt",
+            context: error,
+          }).error();
+        }
 
         // Détection de la catégorie du document
         const detectionResult = await this.categoryDetector.detectCategory(
@@ -62,23 +76,19 @@ export class DocumentProcessingService implements ProcessDocumentUseCase {
       }
     }
 
-    // Extraction des informations avec le prompt personnalisé ou par défaut
+    // Combinaison du prompt système avec le prompt personnalisé si disponibles
+    let finalPrompt = customPrompt;
+    if (systemPrompt) {
+      finalPrompt = systemPrompt + (customPrompt ? "\n\n" + customPrompt : "");
+    }
+
+    // Extraction des informations avec le prompt combiné ou par défaut
     const medicalInfo = await this.documentExtractor.extract(
       document,
-      customPrompt
+      finalPrompt
     );
 
     const validation = this.validateInformation(medicalInfo);
-
-    // // Vérifier si le seul champ manquant est le genre
-    // const onlyGenderMissing =
-    //   validation.missingFields.length === 1 &&
-    //   !medicalInfo.patientGender &&
-    //   medicalInfo.patientFirstName &&
-    //   medicalInfo.patientLastName &&
-    //   medicalInfo.patientBirthdate &&
-    //   medicalInfo.examinationDate &&
-    //   medicalInfo.examinationType;
 
     if (!validation.isValid) {
       try {
