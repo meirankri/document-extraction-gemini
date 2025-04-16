@@ -13,12 +13,15 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v2
 
-      - name: Configure Google Cloud
+      - name: Authentification à Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configuration de gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          export_default_credentials: true
 
       - name: Exécute le script sur l'instance Compute Engine
         run: |
