@@ -168,7 +168,7 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
     const medicalInfo = {
       patientFirstName: json.patientFirstName,
       patientLastName: json.patientLastName,
-      patientGender: json.patientGender,
+      patientGender: json.patientGender?.charAt(0).toUpperCase(),
       patientBirthdate: json.patientBirthdate,
       examinationDate: json.examinationDate,
       examinationType: json.examinationType.trim().replace(/\n/g, " "), // remplace tous les sauts de ligne
