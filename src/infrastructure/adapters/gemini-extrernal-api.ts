@@ -24,7 +24,7 @@ export class GeminiDocumentExtractor implements DocumentExtractor {
     customPrompt?: string
   ): Promise<Omit<MedicalInfo, "status" | "folderName">> {
     const model = this.genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       safetySettings: [
         {
           category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -190,7 +190,7 @@ export class GeminiCategoryDetector implements CategoryDetector {
     categories: string[]
   ): Promise<{ category: string; no_category: boolean }> {
     const model = this.genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       safetySettings: [
         {
           category: HarmCategory.HARM_CATEGORY_HARASSMENT,
